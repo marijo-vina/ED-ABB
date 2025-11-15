@@ -1,6 +1,8 @@
 // --- CONEXIÓN DE BOTONES (Event Listeners) ---
 // Este archivo es el "Controlador". Escucha eventos de la "Vista" (HTML)
-// y da órdenes al "Modelo" (BinarySearchTree).
+
+// Importamos la clase que define nuestro Árbol
+import BinarySearchTree from './BinarySearchTree.js';
 
 document.addEventListener('DOMContentLoaded', () => {
     

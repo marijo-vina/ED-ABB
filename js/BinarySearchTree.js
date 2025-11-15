@@ -42,62 +42,162 @@ class BinarySearchTree {
 
     // --- TAREA 1: Insertar un Elemento ---
     insert(value) {
-        // TODO: Implementar lógica de inserción
-        // 1. Crear un nuevo nodo
-        // 2. Si el árbol está vacío, el nodo es la raíz
-        // 3. Si no, buscar la posición correcta (recursiva o iterativamente)
-        
-        // Placeholder:
+        const newNode = new Node(value);
+
+        // 1. Si el árbol está vacío, el nuevo nodo es la raíz.
         if (this.root === null) {
-            this.root = new Node(value);
-        } else {
-            // ... Lógica para encontrar dónde insertar ...
-            this.log(`(Simulación) Buscando posición para ${value}...`);
+            this.root = newNode;
+            this.log(`Nodo ${value} insertado como raíz.`);
+            this.draw();
+            return;
         }
-        
+
+        // 2. Si no, buscar la posición correcta de forma iterativa.
+        let currentNode = this.root;
+        while (true) {
+            if (value < currentNode.value) {
+                // Ir a la izquierda
+                if (currentNode.left === null) {
+                    currentNode.left = newNode;
+                    break; // Salir del bucle una vez insertado
+                }
+                currentNode = currentNode.left;
+            } else if (value > currentNode.value) {
+                // Ir a la derecha
+                if (currentNode.right === null) {
+                    currentNode.right = newNode;
+                    break; // Salir del bucle una vez insertado
+                }
+                currentNode = currentNode.right;
+            } else {
+                // El valor ya existe, no se permiten duplicados.
+                this.log(`Error: El nodo ${value} ya existe en el árbol.`);
+                return; // Terminar la función
+            }
+        }
+
         this.log(`Nodo ${value} insertado correctamente.`);
-        this.draw(); // Actualizar la visualización
+        this.draw();
     }
 
     // --- TAREA 2: Borrar un Elemento ---
     delete(value) {
-        // TODO: Implementar lógica de borrado (La más compleja)
-        // 1. Buscar el nodo a borrar
-        // 2. Caso 1: Nodo hoja (sin hijos) -> Simplemente borrar
-        // 3. Caso 2: Nodo con un hijo -> Reemplazar con el hijo
-        // 4. Caso 3: Nodo con dos hijos -> Buscar sucesor (ej: el menor del subárbol derecho)
-        
-        this.log(`Intentando borrar nodo ${value}... (Lógica no implementada)`);
-        this.draw(); // Actualizar la visualización
+        // Llama a la función auxiliar recursiva para manejar la lógica.
+        // La variable 'deleted' nos ayuda a saber si el nodo fue encontrado y borrado.
+        const { root, deleted } = this._deleteNode(this.root, value);
+        this.root = root;
+
+        if (deleted) {
+            this.log(`Nodo ${value} borrado correctamente.`);
+        } else {
+            this.log(`Error: El nodo ${value} no se encuentra en el árbol.`);
+        }
+        this.draw();
+    }
+
+    // Función auxiliar recursiva para borrar un nodo.
+    _deleteNode(node, value) {
+        let deleted = true;
+        // Caso base: Si el nodo es nulo, el valor no está en el árbol.
+        if (node === null) {
+            return { root: null, deleted: false };
+        }
+
+        // Buscar el nodo a borrar.
+        if (value < node.value) {
+            const result = this._deleteNode(node.left, value);
+            node.left = result.root;
+            deleted = result.deleted;
+        } else if (value > node.value) {
+            const result = this._deleteNode(node.right, value);
+            node.right = result.root;
+            deleted = result.deleted;
+        } else {
+            // --- Nodo encontrado. Ahora manejamos los 3 casos de borrado ---
+
+            // Caso 1: El nodo es una hoja (no tiene hijos).
+            if (node.left === null && node.right === null) {
+                return { root: null, deleted: true }; // Simplemente lo eliminamos.
+            }
+
+            // Caso 2: El nodo tiene un solo hijo.
+            if (node.left === null) {
+                return { root: node.right, deleted: true }; // Lo reemplazamos con su hijo derecho.
+            }
+            if (node.right === null) {
+                return { root: node.left, deleted: true }; // Lo reemplazamos con su hijo izquierdo.
+            }
+
+            // Caso 3: El nodo tiene dos hijos.
+            // 1. Encontrar el sucesor inorden (el nodo más pequeño en el subárbol derecho).
+            const successor = this._findMinNode(node.right);
+            // 2. Copiar el valor del sucesor al nodo actual.
+            node.value = successor.value;
+            // 3. Borrar el sucesor de su ubicación original en el subárbol derecho.
+            const result = this._deleteNode(node.right, successor.value);
+            node.right = result.root;
+        }
+
+        return { root: node, deleted: deleted };
+    }
+
+    // Función auxiliar para encontrar el nodo con el valor mínimo en un subárbol.
+    _findMinNode(node) {
+        let current = node;
+        while (current && current.left !== null) {
+            current = current.left;
+        }
+        return current;
     }
 
     // --- TAREA 3: Buscar un Elemento ---
     search(value) {
-        // TODO: Implementar lógica de búsqueda
+        this.log(`Buscando nodo ${value}...`);
+
+        let currentNode = this.root;
+        const path = [];
+
         // 1. Empezar desde la raíz
-        // 2. Si el valor es menor, ir a la izquierda
-        // 3. Si el valor es mayor, ir a la derecha
-        // 4. Si es igual, se encontró. Si se llega a null, no existe.
-        
-        this.log(`Buscando nodo ${value}... (Lógica no implementada)`);
-        // Simulación
-        const found = Math.random() > 0.5; // Simulación aleatoria
-        if (found) {
-            this.log(`¡Nodo ${value} encontrado!`);
-        } else {
-            this.log(`Nodo ${value} no se encuentra en el árbol.`);
+        while (currentNode !== null) {
+            path.push(currentNode.value);
+
+            // 4. Si es igual, se encontró.
+            if (value === currentNode.value) {
+                this.log(`Ruta de búsqueda: ${path.join(' -> ')}`);
+                this.log(`¡Nodo ${value} encontrado!`);
+                // En una implementación más avanzada, aquí se podría resaltar el nodo en la UI.
+                return;
+            } else if (value < currentNode.value) {
+                // 2. Si el valor es menor, ir a la izquierda
+                currentNode = currentNode.left;
+            } else {
+                // 3. Si el valor es mayor, ir a la derecha
+                currentNode = currentNode.right;
+            }
         }
+
+        // 4. Si se llega a null, no existe.
+        this.log(`Ruta de búsqueda: ${path.join(' -> ')} -> (null)`);
+        this.log(`Nodo ${value} no se encuentra en el árbol.`);
     }
     
     // --- TAREA 4: Recorrido en Inorden ---
     inOrder() {
-        // TODO: Implementar recorrido Inorden (Izquierda, Raíz, Derecha)
-        // 1. Crear una función recursiva auxiliar
-        // 2. Acumular los valores en un array
-        const result = "[Lógica no implementada]";
-        this.log(`Recorrido Inorden: ${result}`);
+        const result = [];
+        // 1. Llamar a la función recursiva auxiliar comenzando desde la raíz.
+        this._inOrderRecursive(this.root, result);
+        // 2. El array 'result' se llena con los valores acumulados.
+        this.log(`Recorrido Inorden: ${result.join(', ')}`);
     }
 
+    // Función auxiliar para el recorrido Inorden (Izquierda, Raíz, Derecha).
+    _inOrderRecursive(node, result) {
+        if (node !== null) {
+            this._inOrderRecursive(node.left, result); // Visita subárbol izquierdo
+            result.push(node.value);                   // Visita la raíz (agrega el valor)
+            this._inOrderRecursive(node.right, result); // Visita subárbol derecho
+        }
+    }
     // --- TAREA 5: Recorrido en Preorden ---
     preOrder() {
         // TODO: Implementar recorrido Preorden (Raíz, Izquierda, Derecha)
@@ -192,8 +292,7 @@ class BinarySearchTree {
         this.treeContainer.appendChild(nodeDiv);
     }
 
-    // (Aquí pueden añadir más helpers para dibujar líneas, etc.)
+    // (Aquí pueden añadir más helpers para dibujar líneas y los demás nodos, etc.)
 }
 
-// Exportamos la clase para que main.js pueda importarla
 export default BinarySearchTree;
