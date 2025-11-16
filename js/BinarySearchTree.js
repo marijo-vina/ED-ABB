@@ -198,39 +198,95 @@ class BinarySearchTree {
             this._inOrderRecursive(node.right, result); // Visita subárbol derecho
         }
     }
+
     // --- TAREA 5: Recorrido en Preorden ---
     preOrder() {
-        // TODO: Implementar recorrido Preorden (Raíz, Izquierda, Derecha)
-        const result = "[Lógica no implementada]";
-        this.log(`Recorrido Preorden: ${result}`);
+        const result = [];
+        this._preOrderRecursive(this.root, result);
+        this.log(`Recorrido Preorden: ${result.join(', ')}`);
+    }
+
+    // Función auxiliar para Preorden (Raíz, Izquierda, Derecha)
+    _preOrderRecursive(node, result) {
+        if (node !== null) {
+            result.push(node.value); // 1. Visita la Raíz
+            this._preOrderRecursive(node.left, result); // 2. Visita subárbol izquierdo
+            this._preOrderRecursive(node.right, result); // 3. Visita subárbol derecho
+        }
     }
 
     // --- TAREA 6: Recorrido en Postorden ---
     postOrder() {
-        // TODO: Implementar recorrido Postorden (Izquierda, Derecha, Raíz)
-        const result = "[Lógica no implementada]";
-        this.log(`Recorrido Postorden: ${result}`);
+        const result = [];
+        this._postOrderRecursive(this.root, result);
+        this.log(`Recorrido Postorden: ${result.join(', ')}`);
+    }
+
+    // Función auxiliar para Postorden (Izquierda, Derecha, Raíz)
+    _postOrderRecursive(node, result) {
+        if (node !== null) {
+            this._postOrderRecursive(node.left, result); // 1. Visita subárbol izquierdo
+            this._postOrderRecursive(node.right, result); // 2. Visita subárbol derecho
+            result.push(node.value); // 3. Visita la Raíz
+        }
     }
 
     // --- TAREA 7: Recorrido en Amplitud (Por Niveles) ---
     levelOrder() {
-        // TODO: Implementar recorrido por niveles (Usar una Cola - Queue)
-        // 1. Crear una cola y añadir la raíz
-        // 2. Mientras la cola no esté vacía:
-        //    a. Sacar un nodo
-        //    b. Añadir su valor al resultado
-        //    c. Añadir hijos (izquierdo, derecho) a la cola
-        const result = "[Lógica no implementada]";
-        this.log(`Recorrido en Amplitud: ${result}`);
+        // 1. Usar una Cola (Queue)
+        const queue = [];
+        const result = [];
+
+        // Si el árbol está vacío, no hay nada que hacer
+        if (this.root === null) {
+            this.log("Recorrido en Amplitud: (Árbol vacío)");
+            return;
+        }
+
+        // 1. Añadir la raíz a la cola
+        queue.push(this.root);
+
+        // 2. Mientras la cola no esté vacía
+        while (queue.length > 0) {
+            // a. Sacar un nodo
+            const currentNode = queue.shift(); // .shift() saca el primer elemento (FIFO)
+
+            // b. Añadir su valor al resultado
+            result.push(currentNode.value);
+
+            // c. Añadir hijos (izquierdo, derecho) a la cola
+            if (currentNode.left !== null) {
+                queue.push(currentNode.left);
+            }
+            if (currentNode.right !== null) {
+                queue.push(currentNode.right);
+            }
+        }
+
+        this.log(`Recorrido en Amplitud: ${result.join(', ')}`);
     }
 
     // --- TAREA 8: Número de Niveles del Árbol (Altura) ---
     getHeight() {
-        // TODO: Implementar cálculo de altura (función recursiva)
-        // 1. Altura(nodo) = 1 + max(Altura(nodo.izquierda), Altura(nodo.derecha))
-        // 2. Altura(null) = -1 o 0 (depende de la definición, usualmente -1 para nodos nulos)
-        const height = -1; // Placeholder
-        this.log(`Niveles totales (Altura): ${height} (Lógica no implementada)`);
+        // Llama a la función recursiva auxiliar
+        const height = this._calculateHeight(this.root);
+        this.log(`Niveles totales (Altura): ${height}`);
+        return height;
+    }
+
+    // Función auxiliar para calcular la altura
+    _calculateHeight(node) {
+        // 2. Altura(null) = -1. 
+        // (Esto hace que un árbol con solo la raíz tenga altura 0)
+        if (node === null) {
+            return -1;
+        }
+
+        // 1. Altura(nodo) = 1 + max(Altura(izq), Altura(der))
+        const leftHeight = this._calculateHeight(node.left);
+        const rightHeight = this._calculateHeight(node.right);
+
+        return 1 + Math.max(leftHeight, rightHeight);
     }
 
     // --- TAREA 9: Nivel de un Nodo Específico ---
