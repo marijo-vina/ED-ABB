@@ -29,13 +29,12 @@
             border: 2px solid #1e40af; /* bg-blue-800 */
             transition: all 0.3s ease;
             transform: translate(-50%, -50%); /* Centrar el nodo */
+            z-index: 10; /* Asegurar que los nodos estén sobre las líneas */
         }
         /* Línea que conecta nodos */
         .tree-line {
-            position: absolute;
             stroke: #6b7280; /* gray-500 */
             stroke-width: 2;
-            z-index: -1;
         }
     </style>
 </head>

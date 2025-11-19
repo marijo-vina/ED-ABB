@@ -291,64 +291,134 @@ class BinarySearchTree {
 
     // --- TAREA 9: Nivel de un Nodo Específico ---
     getNodeLevel(value) {
-        // TODO: Implementar búsqueda de nivel
-        // 1. Buscar el nodo como en search(), pero contando los niveles
-        // 2. Nivel(raíz) = 0 o 1 (defínalo con su equipo)
-        this.log(`Buscando nivel de ${value}... (Lógica no implementada)`);
+        this.log(`Buscando nivel del nodo ${value}...`);
+        let currentNode = this.root;
+        let level = 0;
+
+        while (currentNode !== null) {
+            if (value === currentNode.value) {
+                this.log(`El nodo ${value} se encuentra en el nivel ${level}.`);
+                return;
+            }
+            
+            if (value < currentNode.value) {
+                currentNode = currentNode.left;
+            } else {
+                currentNode = currentNode.right;
+            }
+            level++;
+        }
+
+        this.log(`Error: El nodo ${value} no se encuentra en el árbol.`);
     }
 
     // --- TAREA 10: Operación 1 Libre (Ej: Contar Hojas) ---
     op1_CountLeaves() {
-        // TODO: Implementar conteo de hojas
-        // 1. Una hoja es un nodo donde left es null Y right es null
-        // 2. Recorrer el árbol y sumar
-        this.log(`Operación Libre 1 (Contar Hojas): [Lógica no implementada]`);
+        const count = this._countLeavesRecursive(this.root);
+        this.log(`El árbol tiene ${count} hoja(s).`);
+    }
+
+    _countLeavesRecursive(node) {
+        if (node === null) {
+            return 0;
+        }
+        if (node.left === null && node.right === null) {
+            return 1; // Es una hoja
+        }
+        return this._countLeavesRecursive(node.left) + this._countLeavesRecursive(node.right);
     }
 
     // --- TAREA 11: Operación 2 Libre (Ej: Valor Máximo) ---
     op2_GetMaxValue() {
-        // TODO: Implementar búsqueda de valor máximo
-        // 1. En un ABB, es el nodo que esté más a la derecha
-        // 2. Empezar en la raíz e ir siempre a la derecha hasta llegar a null
-        this.log(`Operación Libre 2 (Valor Máximo): [Lógica no implementada]`);
+        if (this.root === null) {
+            this.log("El árbol está vacío, no hay valor máximo.");
+            return;
+        }
+        let currentNode = this.root;
+        while (currentNode.right !== null) {
+            currentNode = currentNode.right;
+        }
+        this.log(`El valor máximo en el árbol es: ${currentNode.value}`);
     }
 
     // --- TAREA 12: Dibujar el Árbol (La parte visual) ---
     draw() {
         this.log("Actualizando visualización...");
         if (!this.treeContainer) return; // Salir si no hay contenedor
-        
+
         this.treeContainer.innerHTML = ''; // Limpiar el lienzo
-        
+
         if (this.root === null) {
             this.treeContainer.innerHTML = '<p class="text-gray-400 text-center absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">El árbol está vacío. Inserta un nodo para comenzar.</p>';
             return;
         }
 
-        // TODO: Esta es la parte más difícil de la visualización.
-        // 1. Necesitan una función recursiva que calcule las posiciones (x, y)
-        //    de cada nodo para que no se solapen.
-        // 2. Una vez con posiciones, crear divs (nodos) y svg (líneas)
-        //    y añadirlos a 'this.treeContainer'.
+        // 1. Calcular las posiciones de todos los nodos antes de dibujar
+        this._calculatePositions(this.root, 0, 0, this.treeContainer.clientWidth);
 
-        // --- Simulación de Dibujo (Placeholder) ---
-        // Esto solo dibuja la raíz como ejemplo
-        this.drawNode(this.root.value, '50%', '50px');
-        
-        this.log("¡Dibujo no implementado! Se requiere algoritmo de posicionamiento.");
+        // 2. Dibujar los nodos y las líneas de forma recursiva
+        this._drawTreeRecursive(this.root);
+    }
+
+    // Asigna coordenadas (x, y) a cada nodo.
+    _calculatePositions(node, level, minX, maxX) {
+        if (node === null) return;
+
+        node.x = (minX + maxX) / 2;
+        node.y = level * 70 + 40; // 70px de separación vertical por nivel
+
+        this._calculatePositions(node.left, level + 1, minX, node.x);
+        this._calculatePositions(node.right, level + 1, node.x, maxX);
+    }
+
+    // Dibuja el árbol usando las coordenadas pre-calculadas.
+    _drawTreeRecursive(node) {
+        if (node === null) return;
+
+        // Dibuja los hijos primero para que las líneas queden por debajo
+        if (node.left) {
+            this.drawLine(node.x, node.y, node.left.x, node.left.y);
+            this._drawTreeRecursive(node.left);
+        }
+        if (node.right) {
+            this.drawLine(node.x, node.y, node.right.x, node.right.y);
+            this._drawTreeRecursive(node.right);
+        }
+
+        // Dibuja el nodo actual
+        this.drawNode(node.value, node.x, node.y);
     }
     
     // --- Helper de Dibujo (Ejemplo) ---
     drawNode(value, x, y) {
         const nodeDiv = document.createElement('div');
         nodeDiv.className = 'tree-node';
-        nodeDiv.style.left = x;
-        nodeDiv.style.top = y;
         nodeDiv.textContent = value;
+        nodeDiv.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px)`;
         this.treeContainer.appendChild(nodeDiv);
     }
 
-    // (Aquí pueden añadir más helpers para dibujar líneas y los demás nodos, etc.)
+    drawLine(x1, y1, x2, y2) {
+        const svgNS = "http://www.w3.org/2000/svg";
+        const line = document.createElementNS(svgNS, 'line');
+        line.setAttribute('x1', x1);
+        line.setAttribute('y1', y1);
+        line.setAttribute('x2', x2);
+        line.setAttribute('y2', y2);
+        line.setAttribute('class', 'tree-line');
+        
+        // Si no hay un SVG, lo crea.
+        const svg = this.treeContainer.querySelector('svg') || document.createElementNS(svgNS, 'svg');
+        if (!this.treeContainer.querySelector('svg')) {
+            svg.setAttribute('width', '100%');
+            svg.setAttribute('height', '100%');
+            svg.style.position = 'absolute';
+            svg.style.left = '0';
+            svg.style.top = '0';
+            this.treeContainer.prepend(svg);
+        }
+        svg.appendChild(line);
+    }
 }
 
 export default BinarySearchTree;
